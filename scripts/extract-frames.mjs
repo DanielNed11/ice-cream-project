@@ -19,9 +19,9 @@ const FLAVORS = [
 // 800x450, moderate WebP quality. Bump FRAME_STEP down (fewer frames) if
 // scrubbing feels choppy, or QUALITY up if alpha edges show banding.
 const FRAME_STEP = 2;
-const TARGET_WIDTH = 800;
-const TARGET_HEIGHT = 450;
-const QUALITY = 75;
+const TARGET_WIDTH = 1280;
+const TARGET_HEIGHT = 720;
+const QUALITY = 80;
 
 async function extractFlavor({ id, source }) {
   const sourcePath = path.join(ROOT, source);
