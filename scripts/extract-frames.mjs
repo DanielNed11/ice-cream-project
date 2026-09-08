@@ -10,9 +10,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const FLAVORS = [
-  { id: "banana", source: "banana-animation-final.webp" },
-  { id: "chocolate", source: "chocolate-animation-final.webp" },
-  { id: "strawberry", source: "strawberry-animation-final.webp" },
+  { id: "banana", source: "banana-animation-high.webp" },
+  { id: "chocolate", source: "chocolate-animation-high.webp" },
+  { id: "strawberry", source: "strawberry-animation-high.webp" },
 ];
 
 // Tuning knobs: subsample every 2nd source frame (192 -> 96), downscale to
