@@ -6,7 +6,6 @@ import { useGSAP } from "@gsap/react";
 import { registerGsapPlugins, gsap } from "@/lib/gsap/registerPlugins";
 import { getCachedFrames, loadFrames } from "@/lib/hooks/sequenceCache";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
-import { useIsDesktopViewport } from "@/lib/hooks/useIsDesktopViewport";
 import type { Variant } from "@/lib/variants";
 
 interface SequenceCanvasProps {
@@ -21,19 +20,18 @@ interface SequenceCanvasProps {
 // canvas -- no overlay text -- see FlavorIntro for the flavor
 // name/description/switcher, which lives in its own section below.
 //
-// Below the `sm` breakpoint this renders a static poster instead. Pinning a
-// section for a scroll-scrub distance only works cleanly when the section's
-// natural content fits within one viewport; on some narrow/short viewports
-// that's tighter, so this keeps the simpler static fallback there. Under
-// prefers-reduced-motion the same static poster is used at every breakpoint.
+// Runs identically on mobile and desktop -- the scrub previously fell back
+// to a static poster below the `sm` breakpoint because the hero section
+// used to also hold stacked text, and pinning content taller than the
+// viewport produced a dead-scroll void. Now that the hero is just this
+// canvas at a plain h-screen on every breakpoint, that constraint is gone.
+// The static poster fallback remains for prefers-reduced-motion only.
 export function SequenceCanvas({ sectionRef, activeVariant }: SequenceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const framesRef = useRef<HTMLImageElement[]>([]);
   // Persists across variant switches so switching flavor doesn't reset scroll position.
   const currentFrameRef = useRef({ value: 0 });
-  const reducedMotion = usePrefersReducedMotion();
-  const isDesktop = useIsDesktopViewport();
-  const useStaticHero = reducedMotion || !isDesktop;
+  const useStaticHero = usePrefersReducedMotion();
   const [fading, setFading] = useState(false);
 
   registerGsapPlugins();
