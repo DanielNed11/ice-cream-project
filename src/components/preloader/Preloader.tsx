@@ -4,19 +4,20 @@ import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSequencePreloader } from "@/lib/hooks/useSequencePreloader";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
-import { variants } from "@/lib/variants";
+import { getVariant, type FlavorId } from "@/lib/variants";
 
 interface PreloaderProps {
+  defaultVariantId: FlavorId;
   onDone: () => void;
 }
 
-// Blocks reveal only on the default (first) variant's frames -- the other
-// two flavors prefetch quietly in the background after reveal. Under
+// Blocks reveal only on the opening variant's frames -- the other two
+// flavors prefetch quietly in the background after reveal (see Hero). Under
 // prefers-reduced-motion (which renders a static poster, not the
 // scroll-scrub canvas -- see SequenceCanvas) it only waits on that single
 // poster image instead, matching what SequenceCanvas actually needs.
-export function Preloader({ onDone }: PreloaderProps) {
-  const defaultVariant = variants[0];
+export function Preloader({ defaultVariantId, onDone }: PreloaderProps) {
+  const defaultVariant = getVariant(defaultVariantId);
   const reducedMotion = usePrefersReducedMotion();
   const { loaded, total, done } = useSequencePreloader(defaultVariant, reducedMotion);
   const percent = total === 0 ? 0 : Math.round((loaded / total) * 100);

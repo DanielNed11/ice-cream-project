@@ -6,8 +6,12 @@ import { loadFrames } from "@/lib/hooks/sequenceCache";
 import { SequenceCanvas } from "./SequenceCanvas";
 import { FlavorIntro } from "./FlavorIntro";
 
-export function Hero() {
-  const [activeId, setActiveId] = useState<FlavorId>(variants[0].id);
+interface HeroProps {
+  initialVariantId: FlavorId;
+}
+
+export function Hero({ initialVariantId }: HeroProps) {
+  const [activeId, setActiveId] = useState<FlavorId>(initialVariantId);
   // A callback ref (state), not a plain useRef: SequenceCanvas needs this
   // DOM node to set up its ScrollTrigger, but React attaches refs and fires
   // layout effects bottom-up (children before parents). A plain ref object
@@ -21,12 +25,12 @@ export function Hero() {
   const activeVariant = getVariant(activeId);
 
   useEffect(() => {
-    // The default variant is already warm from the Preloader. Quietly warm
+    // The opening variant is already warm from the Preloader. Quietly warm
     // the other two so PREV/NEXT never has to wait on a network fetch.
     variants
-      .filter((v) => v.id !== variants[0].id)
+      .filter((v) => v.id !== initialVariantId)
       .forEach((v) => loadFrames(v.id, v.sequence.basePath, v.sequence.frameCount));
-  }, []);
+  }, [initialVariantId]);
 
   return (
     <>

@@ -88,3 +88,13 @@ export function prevVariant(id: FlavorId): Variant {
   const i = variants.findIndex((v) => v.id === id);
   return variants[(i - 1 + variants.length) % variants.length];
 }
+
+// Client-only -- callers must not invoke this during SSR/SSG (it would bake
+// one fixed choice into the static HTML instead of varying per visit) or in
+// a useState/useMemo initializer (that runs during the server render too,
+// then again on the client's first hydration pass with a different result,
+// producing a hydration mismatch). Call it from a useEffect instead, after
+// mount.
+export function randomVariantId(): FlavorId {
+  return variants[Math.floor(Math.random() * variants.length)].id;
+}
