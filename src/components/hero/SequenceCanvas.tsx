@@ -34,10 +34,6 @@ interface SequenceCanvasProps {
 // The static poster fallback remains for prefers-reduced-motion only.
 export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Below `sm`, this mirrors the same frame full-bleed behind the sharp
-  // canvas (blurred + dimmed) -- see `blurLayerClassName` below for why a
-  // second layer is needed at all. Unused (never drawn to) at `sm`+.
-  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const framesRef = useRef<HTMLImageElement[]>([]);
   // Persists across variant switches so switching flavor doesn't reset scroll position.
   const currentFrameRef = useRef({ value: 0 });
@@ -46,21 +42,16 @@ export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps
 
   registerGsapPlugins();
 
-  function drawFrame(canvas: HTMLCanvasElement | null, img: HTMLImageElement) {
-    if (!canvas) return;
+  function render(frameIndex: number) {
+    const canvas = canvasRef.current;
+    const frames = framesRef.current;
+    if (!canvas || frames.length === 0) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  }
-
-  function render(frameIndex: number) {
-    const frames = framesRef.current;
-    if (frames.length === 0) return;
     const img = frames[Math.min(Math.max(frameIndex, 0), frames.length - 1)];
     if (!img || !img.complete) return;
-    drawFrame(canvasRef.current, img);
-    drawFrame(bgCanvasRef.current, img);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   }
 
   useEffect(() => {
@@ -76,10 +67,6 @@ export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps
         if (cancelled) return;
         canvas.width = first.naturalWidth || 1280;
         canvas.height = first.naturalHeight || 720;
-        if (bgCanvasRef.current) {
-          bgCanvasRef.current.width = canvas.width;
-          bgCanvasRef.current.height = canvas.height;
-        }
         const isFirstLoad = framesRef.current.length === 0;
         setFading(true);
         window.setTimeout(() => {
@@ -142,65 +129,30 @@ export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps
     { scope: sectionEl ?? undefined, dependencies: [useStaticHero, sectionEl] }
   );
 
-  // The source frames are 16:9 (1280x720). object-cover on a narrow/tall
-  // phone viewport (e.g. 390x844, aspect ~0.46) has to scale the image up
-  // so much to fill both dimensions that it crops out most of the frame --
-  // the tub ends up cut off and zoomed in far past what's readable. contain
-  // shows the whole frame instead, but by itself that leaves a lot of bare
-  // black letterboxing above/below and no longer reads as full-bleed like
-  // the desktop layout. So below `sm` we fill the space with a second copy
-  // of the same frame, blurred/scaled/dimmed behind the sharp contained one
-  // -- full-bleed edge to edge, product never cropped. Wide/short viewports
-  // (sm+) are close enough to 16:9 that plain cover reads as intended and
-  // don't render the blurred layer at all.
-  const blurLayerClassName =
-    "absolute inset-0 h-full w-full scale-125 object-cover blur-3xl brightness-[0.45] sm:hidden";
-  // Below `sm`, size this wrapper to exactly match the 16:9 frame at the
-  // current width (aspect-video, vertically centered) instead of stretching
-  // it to the full h-screen box -- that's what object-contain was doing
-  // before, and it left a lot of dead letterbox space where a mask-image
-  // couldn't usefully fade anything (the mask's own 0-100% range covered
-  // that empty margin, not the photo itself). With the wrapper sized to the
-  // real photo bounds, its edges *are* the photo's edges, so the mask below
-  // actually feathers real content into the blurred layer behind it instead
-  // of stopping short. sm+ reverts to the original full-bleed cover box.
-  const foregroundBoxClassName =
-    "absolute inset-x-0 top-1/2 -translate-y-1/2 aspect-video [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)] sm:inset-0 sm:top-0 sm:h-full sm:w-full sm:translate-y-0 sm:aspect-auto sm:[mask-image:none]";
-
+  // Full-bleed edge to edge on every breakpoint, matching desktop -- the
+  // product frame crops to fill the viewport rather than letterboxing.
   if (useStaticHero) {
     return (
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0">
         <Image
           src={activeVariant.sequence.posterSrc}
-          alt=""
-          aria-hidden="true"
+          alt={`${activeVariant.name} tub`}
           fill
-          className={blurLayerClassName}
+          priority
+          className="object-cover"
         />
-        <div className={foregroundBoxClassName}>
-          <Image
-            src={activeVariant.sequence.posterSrc}
-            alt={`${activeVariant.name} tub`}
-            fill
-            priority
-            className="object-cover"
-          />
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      <canvas ref={bgCanvasRef} aria-hidden="true" className={blurLayerClassName} />
-      <div className={foregroundBoxClassName}>
-        <canvas
-          ref={canvasRef}
-          aria-label={`${activeVariant.name} rotating product animation`}
-          className="h-full w-full object-cover transition-opacity duration-150 ease-out"
-          style={{ opacity: fading ? 0 : 1 }}
-        />
-      </div>
+    <div className="absolute inset-0">
+      <canvas
+        ref={canvasRef}
+        aria-label={`${activeVariant.name} rotating product animation`}
+        className="h-full w-full object-cover transition-opacity duration-150 ease-out"
+        style={{ opacity: fading ? 0 : 1 }}
+      />
     </div>
   );
 }
