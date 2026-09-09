@@ -33,8 +33,10 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 z-40 w-full backdrop-blur-md transition-colors duration-300 ${
-        pastHero ? "border-b border-white/10 bg-black/90" : "border-b border-transparent bg-transparent"
+      className={`fixed top-0 z-40 w-full transition-colors duration-300 ${
+        pastHero
+          ? "border-b border-white/10 bg-black/90 backdrop-blur-md"
+          : "border-b border-transparent bg-transparent"
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 sm:px-10">
