@@ -43,3 +43,10 @@ next-env.d.ts
 
 # personal reference/skill library, not project source
 /front end tools/
+
+# raw animation source videos -- only used locally by `npm run prep:frames`
+# to generate public/sequences/; never served to visitors. Keep these on
+# disk as the source-of-truth for re-extracting frames, but don't bloat the
+# repo with them.
+/*-animation-high.webp
+/*-animation-final.webp
