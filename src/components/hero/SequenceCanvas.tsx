@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import { registerGsapPlugins, gsap } from "@/lib/gsap/registerPlugins";
@@ -9,7 +9,13 @@ import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import type { Variant } from "@/lib/variants";
 
 interface SequenceCanvasProps {
-  sectionRef: RefObject<HTMLDivElement | null>;
+  // The actual DOM node (not a ref object) -- see Hero.tsx for why: React
+  // attaches refs and fires layout effects bottom-up, so a ref owned by
+  // this component's *parent* still reads `.current === null` inside this
+  // component's own first layout effect. Hero.tsx tracks the node in state
+  // via a callback ref instead, so this re-renders (and the effect below
+  // re-runs) once the node genuinely exists.
+  sectionEl: HTMLElement | null;
   activeVariant: Variant;
 }
 
@@ -26,7 +32,7 @@ interface SequenceCanvasProps {
 // viewport produced a dead-scroll void. Now that the hero is just this
 // canvas at a plain h-screen on every breakpoint, that constraint is gone.
 // The static poster fallback remains for prefers-reduced-motion only.
-export function SequenceCanvas({ sectionRef, activeVariant }: SequenceCanvasProps) {
+export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const framesRef = useRef<HTMLImageElement[]>([]);
   // Persists across variant switches so switching flavor doesn't reset scroll position.
@@ -94,7 +100,7 @@ export function SequenceCanvas({ sectionRef, activeVariant }: SequenceCanvasProp
 
   useGSAP(
     () => {
-      if (useStaticHero || !sectionRef.current) return;
+      if (useStaticHero || !sectionEl) return;
 
       const proxy = currentFrameRef.current;
       const tween = gsap.to(proxy, {
@@ -102,7 +108,7 @@ export function SequenceCanvas({ sectionRef, activeVariant }: SequenceCanvasProp
         snap: "value",
         ease: "none",
         scrollTrigger: {
-          trigger: sectionRef.current,
+          trigger: sectionEl,
           start: "top top",
           end: "+=250%",
           scrub: 0.5,
@@ -117,7 +123,10 @@ export function SequenceCanvas({ sectionRef, activeVariant }: SequenceCanvasProp
         tween.kill();
       };
     },
-    { scope: sectionRef, dependencies: [useStaticHero] }
+    // `sectionEl` is a real dependency here (not just scope config): the
+    // effect needs to re-run once the node actually mounts, since it's null
+    // on the very first render.
+    { scope: sectionEl ?? undefined, dependencies: [useStaticHero, sectionEl] }
   );
 
   if (useStaticHero) {
