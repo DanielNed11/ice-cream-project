@@ -79,16 +79,6 @@ export function getVariant(id: FlavorId): Variant {
   return variant;
 }
 
-export function nextVariant(id: FlavorId): Variant {
-  const i = variants.findIndex((v) => v.id === id);
-  return variants[(i + 1) % variants.length];
-}
-
-export function prevVariant(id: FlavorId): Variant {
-  const i = variants.findIndex((v) => v.id === id);
-  return variants[(i - 1 + variants.length) % variants.length];
-}
-
 // Client-only -- callers must not invoke this during SSR/SSG (it would bake
 // one fixed choice into the static HTML instead of varying per visit) or in
 // a useState/useMemo initializer (that runs during the server render too,
