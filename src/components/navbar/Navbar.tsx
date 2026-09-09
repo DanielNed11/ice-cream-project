@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const links = [
   { href: "#product", label: "Product" },
@@ -20,6 +21,9 @@ export function Navbar() {
   // pin (GSAP keeps it visually in place via a transform) and only goes
   // false once it's truly scrolled past.
   const [pastHero, setPastHero] = useState(false);
+  // Below `sm`, the link list is hidden with no other way to reach the
+  // lower sections -- this drives a toggleable mobile menu instead.
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const hero = document.getElementById("product");
@@ -34,7 +38,7 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 z-40 w-full transition-colors duration-300 ${
-        pastHero
+        pastHero || menuOpen
           ? "border-b border-white/10 bg-black/90 backdrop-blur-md"
           : "border-b border-transparent bg-transparent"
       }`}
@@ -52,7 +56,47 @@ export function Navbar() {
             </li>
           ))}
         </ul>
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          className="flex h-8 w-8 flex-col items-center justify-center gap-[5px] sm:hidden"
+        >
+          <span
+            className={`h-px w-5 bg-white transition-transform duration-200 ${menuOpen ? "translate-y-[6.5px] rotate-45" : ""}`}
+          />
+          <span className={`h-px w-5 bg-white transition-opacity duration-200 ${menuOpen ? "opacity-0" : ""}`} />
+          <span
+            className={`h-px w-5 bg-white transition-transform duration-200 ${menuOpen ? "-translate-y-[6.5px] -rotate-45" : ""}`}
+          />
+        </button>
       </nav>
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="overflow-hidden bg-black sm:hidden"
+          >
+            <ul className="flex flex-col gap-1 px-6 pb-6 font-mono text-sm tracking-[0.15em] text-white/80 uppercase">
+              {links.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="block border-t border-white/10 py-4 transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

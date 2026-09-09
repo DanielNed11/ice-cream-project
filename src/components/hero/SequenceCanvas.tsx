@@ -129,10 +129,25 @@ export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps
     { scope: sectionEl ?? undefined, dependencies: [useStaticHero, sectionEl] }
   );
 
+  // The source frames are 16:9 (1280x720). object-cover on a narrow/tall
+  // phone viewport (e.g. 390x844, aspect ~0.46) has to scale the image up
+  // so much to fill both dimensions that it crops out most of the frame --
+  // the tub ends up cut off and zoomed in far past what's readable. contain
+  // shows the whole frame instead; since the section behind it is solid
+  // black, the letterboxing is invisible. Wide/short viewports (sm+) are
+  // close enough to 16:9 that cover reads as intended there.
+  const objectFitClassName = "object-contain sm:object-cover";
+
   if (useStaticHero) {
     return (
       <div className="absolute inset-0">
-        <Image src={activeVariant.sequence.posterSrc} alt={`${activeVariant.name} tub`} fill priority className="object-cover" />
+        <Image
+          src={activeVariant.sequence.posterSrc}
+          alt={`${activeVariant.name} tub`}
+          fill
+          priority
+          className={objectFitClassName}
+        />
       </div>
     );
   }
@@ -142,7 +157,7 @@ export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps
       <canvas
         ref={canvasRef}
         aria-label={`${activeVariant.name} rotating product animation`}
-        className="h-full w-full object-cover transition-opacity duration-150 ease-out"
+        className={`h-full w-full transition-opacity duration-150 ease-out ${objectFitClassName}`}
         style={{ opacity: fading ? 0 : 1 }}
       />
     </div>
