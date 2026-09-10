@@ -111,7 +111,13 @@ export function SequenceCanvas({ sectionEl, activeVariant }: SequenceCanvasProps
           trigger: sectionEl,
           start: "top top",
           end: "+=250%",
-          scrub: 0.5,
+          // Lower = less delay between actual scroll position and the frame
+          // shown. 0.5 felt laggy specifically during slow scrolling (the
+          // catch-up delay is time-based, not frame-based -- more frames
+          // never fixes this). Still >0 rather than `true` (zero smoothing)
+          // so fast, jerky input (wheel notches, trackpad flicks) doesn't
+          // look twitchy.
+          scrub: 0.15,
           pin: true,
           anticipatePin: 1,
         },

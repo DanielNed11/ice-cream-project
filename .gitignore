@@ -50,3 +50,5 @@ next-env.d.ts
 # repo with them.
 /*-animation-high.webp
 /*-animation-final.webp
+/*-animation.mp4
+/.tmp-frames/

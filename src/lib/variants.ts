@@ -38,7 +38,7 @@ export const variants: Variant[] = [
     ingredients: ["Premium Cavendish Bananas", "Roasted Almonds"],
     ingredientNote: "Roasted almonds fold in real crunch and healthy fats.",
     nutrition: { proteinG: 22, caloriesPerServing: null, servingSize: "1 tub" },
-    sequence: { basePath: "/sequences/banana", frameCount: 96, posterSrc: "/posters/banana-poster.webp" },
+    sequence: { basePath: "/sequences/banana", frameCount: 192, posterSrc: "/posters/banana-poster.webp" },
     lifestyleImageSrc: "/lifestyle/banana-product.jpg",
   },
   {
@@ -53,7 +53,7 @@ export const variants: Variant[] = [
     ingredients: ["Premium Belgian Cacao"],
     ingredientNote: "Deep, dark cacao for a rich flavor with none of the sugar crash.",
     nutrition: { proteinG: 20, caloriesPerServing: null, servingSize: "1 tub" },
-    sequence: { basePath: "/sequences/chocolate", frameCount: 96, posterSrc: "/posters/chocolate-poster.webp" },
+    sequence: { basePath: "/sequences/chocolate", frameCount: 192, posterSrc: "/posters/chocolate-poster.webp" },
     lifestyleImageSrc: "/lifestyle/chocolate-product.jpg",
   },
   {
@@ -68,7 +68,7 @@ export const variants: Variant[] = [
     ingredients: ["Fresh Ripened Strawberries"],
     ingredientNote: "Real ripened strawberries for natural sweetness, no added sugar.",
     nutrition: { proteinG: 21, caloriesPerServing: 40, servingSize: "1 tub" },
-    sequence: { basePath: "/sequences/strawberry", frameCount: 96, posterSrc: "/posters/strawberry-poster.webp" },
+    sequence: { basePath: "/sequences/strawberry", frameCount: 192, posterSrc: "/posters/strawberry-poster.webp" },
     lifestyleImageSrc: "/lifestyle/strawberry-product.jpg",
   },
 ];
