@@ -71,3 +71,21 @@ export interface ApiErrorBody {
   path: string;
   timestamp: string;
 }
+
+/** Admin view of an order: carries the internal id for support lookups. */
+export interface AdminOrder {
+  id: string;
+  reference: string;
+  placedAt: string;
+  status: OrderStatus;
+  customerEmail: string;
+  totalPrice: number;
+}
+
+export interface OrderAnalytics {
+  totalRevenue: number;
+  revenueOrderCount: number;
+  averageOrderValue: number;
+  ordersByStatus: Partial<Record<OrderStatus, number>>;
+  topProducts: { productName: string; quantitySold: number }[];
+}

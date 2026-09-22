@@ -101,3 +101,29 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const text = await response.text();
   return (text ? JSON.parse(text) : undefined) as T;
 }
+
+/**
+ * The spreadsheet export is an authenticated binary response, so it cannot be a
+ * plain link: the bearer token has to go in a header, which means fetching the
+ * bytes and handing the browser an object URL.
+ */
+export async function apiDownload(path: string, filename: string): Promise<void> {
+  const token = getAccessToken();
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!response.ok) throw await toApiError(response);
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = filename;
+    link.click();
+  } finally {
+    // Revoking immediately would cancel the download in some browsers.
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+  }
+}

@@ -70,6 +70,15 @@ export function Navbar() {
 
   const accountHref = user ? "/account" : "/login";
   const accountLabel = user ? "Account" : "Sign in";
+  // Staff only: customers never see a link they would be bounced off.
+  const isStaff = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
+
+  const menuEntries: { href: Route; label: string }[] = [
+    ...(isStaff ? [{ href: "/admin" as Route, label: "Admin" }] : []),
+    { href: "/shop", label: "Shop" },
+    { href: "/cart", label: itemCount > 0 ? `Cart (${itemCount})` : "Cart" },
+    { href: accountHref, label: accountLabel },
+  ];
 
   const focusRing =
     "rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
@@ -104,6 +113,12 @@ export function Navbar() {
 
           {!loading && (
             <>
+              {isStaff && (
+                <Link href="/admin" className={navLink}>
+                  Admin
+                </Link>
+              )}
+
               <Link href="/cart" className={navLink}>
                 Cart
                 {itemCount > 0 && (
@@ -154,11 +169,7 @@ export function Navbar() {
             }}
             className="overflow-hidden bg-black sm:hidden"
           >
-            {([
-              { href: "/shop", label: "Shop" },
-              { href: "/cart", label: itemCount > 0 ? `Cart (${itemCount})` : "Cart" },
-              { href: accountHref, label: accountLabel },
-            ] satisfies { href: Route; label: string }[]).map((entry) => (
+            {menuEntries.map((entry) => (
               <Link
                 key={entry.href}
                 href={entry.href}
