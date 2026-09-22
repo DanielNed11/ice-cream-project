@@ -52,6 +52,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <CartProvider>
             <Navbar />
             {children}
+            {/* Lives here rather than on the landing page so every route,
+                including the store and admin pages, ends the same way. */}
+            <footer className="border-t border-white/10 px-6 py-10 text-center font-mono text-xs tracking-widest text-white/60 uppercase sm:px-10">
+              Nano Protein Ice Cream -- portfolio demo
+            </footer>
           </CartProvider>
         </AuthProvider>
       </body>

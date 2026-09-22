@@ -13,6 +13,56 @@
   --font-mono: var(--font-jetbrains-mono);
 }
 
+/* ---------------------------------------------------------------------------
+   Shared visual vocabulary, lifted from the landing page so the store pages
+   speak the same language. Values are copied from the reference sections --
+   SectionHeading's eyebrow, the Ingredients/Nutrition card surface, and the
+   navbar's focus ring -- rather than re-invented per page.
+   --------------------------------------------------------------------------- */
+
+/* JetBrains Mono, uppercase, wide tracking: the label voice used for every
+   eyebrow, stat caption and metadata line on the landing page. */
+@utility eyebrow {
+  @apply font-mono text-xs tracking-[0.3em] text-white/60 uppercase;
+}
+
+/* The card/panel surface shared by Ingredients, Nutrition and Reviews. */
+@utility surface-panel {
+  @apply rounded-3xl border border-white/10 bg-white/[0.03];
+}
+
+/* Same ring the navbar uses, so keyboard focus looks identical site-wide. */
+@utility focus-ring {
+  @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
+}
+
+/* The same entrance as Reveal (12-16px rise, ~0.35s, ease-out) for content
+   that is already on screen at load and so has nothing to scroll into.
+   Deliberately CSS rather than framer-motion: these pages are prerendered,
+   and a JS-driven `opacity: 0` would ship an invisible form in the static
+   HTML until hydration. Reduced motion is honoured below, the same way this
+   file already handles scroll-behavior. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility rise-in {
+  animation: rise-in 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }

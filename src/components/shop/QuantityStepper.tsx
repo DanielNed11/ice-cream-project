@@ -13,13 +13,16 @@ interface QuantityStepperProps {
  * quantity of 0 as a removal, so the control does not need a separate button.
  */
 export function QuantityStepper({ quantity, max, busy = false, onChange, label }: QuantityStepperProps) {
+  // 44px square targets inside a single rounded-full group, so the control
+  // reads as one object in the same pill language as the landing page's CTAs.
   const button =
-    "flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-lg " +
-    "leading-none text-white transition-colors hover:bg-white/10 disabled:opacity-30 " +
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+    "flex h-11 w-11 items-center justify-center rounded-full text-lg leading-none text-white " +
+    "transition-[background-color,transform] duration-200 hover:bg-white/10 active:scale-95 " +
+    "motion-reduce:transition-none motion-reduce:active:scale-100 " +
+    "disabled:pointer-events-none disabled:opacity-30 focus-ring";
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="inline-flex items-center rounded-full border border-white/15 bg-white/[0.04] p-1">
       <button
         type="button"
         onClick={() => onChange(quantity - 1)}
@@ -36,7 +39,11 @@ export function QuantityStepper({ quantity, max, busy = false, onChange, label }
 
       {/* Announced on every change, atomic so the product name goes with the
           number rather than a bare "3". */}
-      <span aria-live="polite" aria-atomic="true" className="w-8 text-center font-mono text-sm text-white">
+      <span
+        aria-live="polite"
+        aria-atomic="true"
+        className="w-10 text-center font-mono text-sm tabular-nums text-white"
+      >
         <span className="sr-only">{label}: </span>
         {quantity}
       </span>
