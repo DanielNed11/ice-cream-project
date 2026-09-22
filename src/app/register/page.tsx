@@ -1,18 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import { RegisterPage } from "./RegisterPage";
 
-import { AuthForm } from "@/components/auth/AuthForm";
-import { useAuth } from "@/lib/auth/AuthProvider";
+export const metadata: Metadata = {
+  title: "Create account · Nano Protein Ice Cream",
+  description: "Create a Nano Protein Ice Cream account.",
+};
 
-export default function RegisterPage() {
-  const { register } = useAuth();
-
-  return (
-    <AuthForm
-      title="Create account"
-      submitLabel="Create account"
-      withName
-      onSubmit={({ name, email, password }) => register(name, email, password)}
-      footer={{ prompt: "Already have an account?", href: "/login", label: "Sign in" }}
-    />
-  );
+export default function Page() {
+  return <RegisterPage />;
 }

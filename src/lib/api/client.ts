@@ -1,5 +1,6 @@
 import type { ApiErrorBody, AuthTokens } from "@/lib/api/types";
 import { clearTokens, getAccessToken, getRefreshToken, storeTokens } from "@/lib/auth/tokens";
+import { emitSessionExpired } from "@/lib/auth/authEvents";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
@@ -81,13 +82,22 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     const refreshed = await refreshTokens();
     if (!refreshed) {
       clearTokens();
+      // Clearing storage is not enough: React still holds a user object, so
+      // the UI would keep claiming the visitor is signed in.
+      emitSessionExpired();
       throw await toApiError(response);
     }
     response = await send(path, options, refreshed.accessToken);
   }
 
   if (!response.ok) throw await toApiError(response);
-  if (response.status === 204) return undefined as T;
 
-  return (await response.json()) as T;
+  // 204 is the documented empty response, but any 2xx may carry no body and
+  // response.json() would throw a SyntaxError that callers cannot classify.
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+
+  const text = await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }

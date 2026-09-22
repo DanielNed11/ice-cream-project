@@ -47,7 +47,7 @@ export function AuthForm({ title, submitLabel, withName = false, onSubmit, foote
 
   const field =
     "w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white " +
-    "placeholder:text-white/40 focus:border-white/40 focus:outline-none";
+    "placeholder:text-white/60 focus:border-white/40 focus:outline-none";
 
   return (
     <main className={`mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 pb-16 ${NAVBAR_HEIGHT_CLASS}`}>

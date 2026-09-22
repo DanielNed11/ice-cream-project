@@ -1,17 +1,11 @@
-"use client";
+import type { Metadata } from "next";
+import { LoginPage } from "./LoginPage";
 
-import { AuthForm } from "@/components/auth/AuthForm";
-import { useAuth } from "@/lib/auth/AuthProvider";
+export const metadata: Metadata = {
+  title: "Sign in · Nano Protein Ice Cream",
+  description: "Sign in to your Nano Protein Ice Cream account.",
+};
 
-export default function LoginPage() {
-  const { login } = useAuth();
-
-  return (
-    <AuthForm
-      title="Welcome back"
-      submitLabel="Sign in"
-      onSubmit={({ email, password }) => login(email, password)}
-      footer={{ prompt: "No account yet?", href: "/register", label: "Create one" }}
-    />
-  );
+export default function Page() {
+  return <LoginPage />;
 }

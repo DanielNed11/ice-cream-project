@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { apiRequest } from "@/lib/api/client";
 import type { AuthTokens, User } from "@/lib/api/types";
 import { clearTokens, getAccessToken, storeTokens } from "@/lib/auth/tokens";
+import { onSessionExpired } from "@/lib/auth/authEvents";
 
 interface AuthContextValue {
   user: User | null;
@@ -21,12 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Throws on failure. Callers decide what that means: signing in must report
+  // the error, restoring a stored session should just fall back to signed out.
   const loadProfile = useCallback(async () => {
     try {
       setUser(await apiRequest<User>("/api/auth/me"));
-    } catch {
+    } catch (cause) {
       clearTokens();
       setUser(null);
+      throw cause;
     }
   }, []);
 
@@ -39,7 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function restoreSession() {
       if (getAccessToken()) {
-        await loadProfile();
+        // A stored token that no longer works simply means signed out.
+        await loadProfile().catch(() => undefined);
       }
       if (!cancelled) {
         setLoading(false);
@@ -51,6 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, [loadProfile]);
+
+  useEffect(() => onSessionExpired(() => setUser(null)), []);
 
   const login = useCallback(
     async (email: string, password: string) => {

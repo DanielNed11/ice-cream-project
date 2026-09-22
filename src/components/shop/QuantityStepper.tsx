@@ -23,22 +23,29 @@ export function QuantityStepper({ quantity, max, busy = false, onChange, label }
       <button
         type="button"
         onClick={() => onChange(quantity - 1)}
-        disabled={busy || quantity <= 0}
+        // Not disabled while busy: disabling the focused button drops focus to
+        // the document body. Quantities are sent as absolute values, so an
+        // extra press is harmless.
+        aria-busy={busy}
+        disabled={quantity <= 0}
         aria-label={`Remove one ${label}`}
         className={button}
       >
         −
       </button>
 
-      {/* aria-live so a screen reader hears the new quantity after each press. */}
-      <span aria-live="polite" className="w-8 text-center font-mono text-sm text-white">
+      {/* Announced on every change, atomic so the product name goes with the
+          number rather than a bare "3". */}
+      <span aria-live="polite" aria-atomic="true" className="w-8 text-center font-mono text-sm text-white">
+        <span className="sr-only">{label}: </span>
         {quantity}
       </span>
 
       <button
         type="button"
         onClick={() => onChange(quantity + 1)}
-        disabled={busy || quantity >= max}
+        aria-busy={busy}
+        disabled={quantity >= max}
         aria-label={`Add one ${label}`}
         className={button}
       >

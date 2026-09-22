@@ -34,7 +34,7 @@ export function Nutrition() {
         </Reveal>
 
         <Reveal delay={0.15}>
-          <p className="mt-8 max-w-2xl text-xs text-white/40">{nutritionFootnote}</p>
+          <p className="mt-8 max-w-2xl text-xs text-white/60">{nutritionFootnote}</p>
         </Reveal>
       </div>
     </section>

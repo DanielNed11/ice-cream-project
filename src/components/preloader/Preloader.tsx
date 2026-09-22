@@ -48,7 +48,7 @@ export function Preloader({ defaultVariantId, onDone }: PreloaderProps) {
               transition={{ duration: reducedMotion ? 0 : 0.2, ease: "linear" }}
             />
           </div>
-          <p className="mt-3 font-mono text-xs text-white/40">{percent}%</p>
+          <p className="mt-3 font-mono text-xs text-white/60">{percent}%</p>
         </motion.div>
       )}
     </AnimatePresence>

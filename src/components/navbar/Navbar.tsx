@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -124,6 +125,10 @@ export function Navbar() {
           onClick={() => setMenuOpen((open) => !open)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setMenuOpen(false);
+          }}
           // 44px square: the minimum comfortable touch target.
           className={`-mr-2 flex h-11 w-11 flex-col items-center justify-center gap-[5px] sm:hidden ${focusRing}`}
         >
@@ -143,13 +148,17 @@ export function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
+            id="mobile-menu"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setMenuOpen(false);
+            }}
             className="overflow-hidden bg-black sm:hidden"
           >
-            {[
-              { href: "/shop" as const, label: "Shop" },
-              { href: "/cart" as const, label: itemCount > 0 ? `Cart (${itemCount})` : "Cart" },
+            {([
+              { href: "/shop", label: "Shop" },
+              { href: "/cart", label: itemCount > 0 ? `Cart (${itemCount})` : "Cart" },
               { href: accountHref, label: accountLabel },
-            ].map((entry) => (
+            ] satisfies { href: Route; label: string }[]).map((entry) => (
               <Link
                 key={entry.href}
                 href={entry.href}

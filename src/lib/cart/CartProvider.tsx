@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { apiRequest } from "@/lib/api/client";
+import { ApiError, apiRequest } from "@/lib/api/client";
 import type { Cart } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
@@ -11,10 +11,11 @@ interface CartContextValue {
   /** Total units across every line, for the navbar badge. */
   itemCount: number;
   loading: boolean;
+  /** Set when the cart could not be read, so "empty" is never guessed. */
+  error: string | null;
   /** Quantity 0 removes the line; the backend owns that rule. */
   setQuantity: (slug: string, quantity: number) => Promise<void>;
   refresh: () => Promise<void>;
-  clear: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -22,13 +23,19 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Starts true so a cold load never paints "your cart is empty" in the frame
+  // before the request has even been sent.
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
       setCart(await apiRequest<Cart>("/api/cart"));
-    } catch {
-      setCart(null);
+      setError(null);
+    } catch (cause) {
+      // Deliberately keeps whatever was already loaded: a failed read must not
+      // be presented as an empty cart.
+      setError(cause instanceof ApiError ? cause.message : "Could not load your cart.");
     }
   }, []);
 
@@ -39,12 +46,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     async function loadCart() {
       if (!user) {
-        if (!cancelled) setCart(null);
+        if (!cancelled) {
+          setCart(null);
+          setError(null);
+          setLoading(false);
+        }
         return;
       }
+
       if (!cancelled) setLoading(true);
-      await refresh();
-      if (!cancelled) setLoading(false);
+
+      // Read into a local first: refresh() would write state even after the
+      // effect was cleaned up, putting a signed out visitor's cart back.
+      try {
+        const loaded = await apiRequest<Cart>("/api/cart");
+        if (!cancelled) {
+          setCart(loaded);
+          setError(null);
+        }
+      } catch (cause) {
+        if (!cancelled) {
+          setError(cause instanceof ApiError ? cause.message : "Could not load your cart.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
 
     void loadCart();
@@ -63,16 +89,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const clear = useCallback(() => setCart(null), []);
-
   const itemCount = useMemo(
     () => cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0,
     [cart],
   );
 
   const value = useMemo(
-    () => ({ cart, itemCount, loading, setQuantity, refresh, clear }),
-    [cart, itemCount, loading, setQuantity, refresh, clear],
+    () => ({ cart, itemCount, loading, error, setQuantity, refresh }),
+    [cart, itemCount, loading, error, setQuantity, refresh],
   );
 
   return <CartContext value={value}>{children}</CartContext>;
