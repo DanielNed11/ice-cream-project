@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
+import { Navbar } from "@/components/navbar/Navbar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,7 +47,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       style={{ colorScheme: "dark" }}
     >
       <body id="top" className="min-h-full bg-black text-white">
-        {children}
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

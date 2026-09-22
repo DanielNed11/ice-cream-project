@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Preloader } from "@/components/preloader/Preloader";
-import { Navbar } from "@/components/navbar/Navbar";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Hero } from "@/components/hero/Hero";
 import { Ingredients } from "@/components/sections/Ingredients";
@@ -45,7 +44,6 @@ export default function Home() {
     <>
       <Preloader defaultVariantId={openingVariantId} onDone={handlePreloaderDone} />
       {loaded && <ScrollProgress />}
-      <Navbar />
       <main>
         <Hero initialVariantId={openingVariantId} />
         <Ingredients />
