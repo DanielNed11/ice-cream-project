@@ -86,7 +86,7 @@ export default function AccountPage() {
 
   return (
     <main className={`mx-auto min-h-dvh w-full max-w-3xl px-6 pb-16 ${NAVBAR_HEIGHT_CLASS}`}>
-      <header className="flex flex-wrap items-start justify-between gap-4">
+      <header className="flex flex-wrap items-start justify-between gap-4 pt-12">
         <div>
           <h1 className="font-serif text-4xl italic text-white">{user.name}</h1>
           <p className="mt-1 text-sm text-white/50">{user.email}</p>

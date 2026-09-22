@@ -3,6 +3,7 @@ import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { Navbar } from "@/components/navbar/Navbar";
+import { CartProvider } from "@/lib/cart/CartProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,8 +49,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body id="top" className="min-h-full bg-black text-white">
         <AuthProvider>
-          <Navbar />
-          {children}
+          <CartProvider>
+            <Navbar />
+            {children}
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

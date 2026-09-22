@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useCart } from "@/lib/cart/CartProvider";
 
 export const NAVBAR_HEIGHT_CLASS = "pt-[4.5rem]";
 
@@ -13,6 +14,7 @@ export function Navbar() {
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { itemCount } = useCart();
 
   const isLanding = pathname === "/";
 
@@ -70,6 +72,7 @@ export function Navbar() {
 
   const focusRing =
     "rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
+  const navLink = `font-mono text-xs tracking-[0.15em] text-white/70 uppercase transition-colors hover:text-white ${focusRing}`;
 
   return (
     <header
@@ -93,16 +96,28 @@ export function Navbar() {
 
         {/* Rendered only once the session is known, so a signed in visitor
             never sees "Sign in" flash before their name resolves. */}
-        {!loading && (
-          <div className="hidden sm:block">
-            <Link
-              href={accountHref}
-              className={`font-mono text-xs tracking-[0.15em] text-white/70 uppercase transition-colors hover:text-white ${focusRing}`}
-            >
-              {accountLabel}
-            </Link>
-          </div>
-        )}
+        <div className="hidden items-center gap-8 sm:flex">
+          <Link href="/shop" className={navLink}>
+            Shop
+          </Link>
+
+          {!loading && (
+            <>
+              <Link href="/cart" className={navLink}>
+                Cart
+                {itemCount > 0 && (
+                  <span className="ml-2 rounded-full bg-white px-2 py-0.5 font-sans text-[0.65rem] text-black">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+
+              <Link href={accountHref} className={navLink}>
+                {accountLabel}
+              </Link>
+            </>
+          )}
+        </div>
 
         <button
           type="button"
@@ -130,13 +145,20 @@ export function Navbar() {
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }}
             className="overflow-hidden bg-black sm:hidden"
           >
-            <Link
-              href={accountHref}
-              onClick={() => setMenuOpen(false)}
-              className={`block border-t border-white/10 px-6 py-4 font-mono text-sm tracking-[0.15em] text-white uppercase ${focusRing}`}
-            >
-              {accountLabel}
-            </Link>
+            {[
+              { href: "/shop" as const, label: "Shop" },
+              { href: "/cart" as const, label: itemCount > 0 ? `Cart (${itemCount})` : "Cart" },
+              { href: accountHref, label: accountLabel },
+            ].map((entry) => (
+              <Link
+                key={entry.href}
+                href={entry.href}
+                onClick={() => setMenuOpen(false)}
+                className={`block border-t border-white/10 px-6 py-4 font-mono text-sm tracking-[0.15em] text-white uppercase ${focusRing}`}
+              >
+                {entry.label}
+              </Link>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
