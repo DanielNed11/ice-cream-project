@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nano Protein Ice Cream — Storefront
 
-## Getting Started
+Next.js storefront for a fictional protein ice cream brand: an animated landing
+page, a catalog, a cart, order history and an admin panel. It consumes a Spring
+Boot API that lives in a separate repository:
+<https://github.com/DanielNed11/ice-cream>
 
-First, run the development server:
+Live at <https://icecream.danielnedyalkov.dev>
+
+## Stack
+
+| | |
+|---|---|
+| Framework | Next.js 16 (App Router), React 19, TypeScript |
+| Styling | Tailwind CSS v4 |
+| Motion | Framer Motion |
+| Auth | JWT access tokens held in memory, rotating refresh tokens |
+| Hosting | Vercel |
+
+## What it does
+
+**Storefront** — a landing page that opens on a randomly chosen flavour, a shop
+that reads live stock from the API, a cart, and checkout.
+
+**Account** — registration, sign in, and an order history with per-order detail
+and customer cancellation.
+
+**Admin** — order analytics with status and date filtering, and a streamed
+`.xlsx` export. Superadmins additionally get product management. Both panels are
+hidden from customers, though the real protection is the API returning 403; the
+client-side guard only decides what to render.
+
+**Session handling** — `lib/api/client.ts` wraps every request. A 401 triggers a
+single-flight refresh, replays the original request, and emits a session-expired
+event if the refresh itself fails, so a burst of parallel requests produces one
+refresh rather than a stampede.
+
+## Running it locally
+
+Requires Node 20+ and the API running on port 8080.
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Used for |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | Base URL of the API, e.g. `http://localhost:8080` |
 
-## Learn More
+`NEXT_PUBLIC_*` variables are **inlined at build time**, not read at runtime.
+Changing this value in Vercel has no effect until the project is redeployed —
+the built bundle still contains the old one.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploying
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Vercel builds on push to `main`. Two things must line up with the API:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **`NEXT_PUBLIC_API_URL`** must point at the deployed API, and the project must
+  be rebuilt after it changes.
+- **The API's `CORS_ALLOWED_ORIGINS`** must list this site's origin. If it does
+  not, both services look healthy while the browser blocks every request — the
+  failure is visible only in the console.
 
-## Deploy on Vercel
+Adding a custom domain needs no rebuild: Vercel routes the existing deployment
+to the new hostname and issues the certificate itself. Widen the API's allowed
+origins *before* pointing DNS, so there is never a window where the site loads
+but cannot reach the API.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Notes on the design
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Tokens live in `localStorage`, deliberately.** That keeps the session across
+  reloads without a cookie or a server session, at the cost of being readable by
+  any script running on the page. The stronger arrangement is an httpOnly
+  refresh cookie the browser sends but no script can read; this is a demo, and
+  the tradeoff is recorded here rather than hidden. Every read and write is
+  wrapped, because a browser with site data blocked throws rather than returning
+  null.
+- **Routes are typed.** `typedRoutes` is enabled, so a link to a route that does
+  not exist fails the build rather than the click. New routes need
+  `npx next typegen` before the types catch up.
+- **The navbar is transparent over the hero and solid everywhere else.** The
+  landing page renders nothing until its preloader resolves, so the observed
+  element does not exist at mount — a `MutationObserver` waits for it instead of
+  assuming it is there.

@@ -52,3 +52,4 @@ next-env.d.ts
 /*-animation-final.webp
 /*-animation.mp4
 /.tmp-frames/
+!.env.example
